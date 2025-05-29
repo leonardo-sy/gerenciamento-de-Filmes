@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro de Filmes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        section {
+            margin-bottom: 20px;
+        }
+        label, select, input {
+            display: block;
+            margin-top: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastro de Filmes</h1>
+
+    <section>
+        <h2>Cadastrar Filme</h2>
+        <label>Nome: <input type="text" id="nomeFilme"></label>
+        <label>Gênero:
+            <select id="generoFilme">
+                <option value="Comédia">Comédia</option>
+                <option value="Ação">Ação</option>
+                <option value="Terror">Terror</option>
+                <option value="Romance">Romance</option>
+                <option value="Suspense">Suspense</option>
+                <option value="Drama">Drama</option>
+                <option value="Animação">Animação</option>
+            </select>
+        </label>
+        <label>Ano de Lançamento: <input type="number" id="anoFilme"></label>
+        <label>Nota (0-10): <input type="number" id="notaFilme" step="0.1" min="0" max="10"></label>
+        <button onclick="cadastrarFilme()">Cadastrar</button>
+    </section>
+
+    <section>
+        <h2>Ações</h2>
+        <button onclick="listarFilmes()">Listar Filmes</button>
+        <label>Buscar por nome: <input type="text" id="buscaNome">
+        <button onclick="buscarFilmes()">Buscar</button></label>
+        <label>Remover por nome: <input type="text" id="removeNome">
+        <button onclick="removerFilme()">Remover</button></label>
+        <button onclick="exibirEstatisticas()">Estatísticas</button>
+    </section>
+
+    <section>
+        <h2>Resultado</h2>
+        <textarea id="saida" readonly></textarea>
+    </section>
+
+    <script>
+        let filmes = [];
+
+        function cadastrarFilme() {
+            let nome = document.getElementById("nomeFilme").value.trim();
+            nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+
+            let genero = document.getElementById("generoFilme").value;
+            let ano = parseInt(document.getElementById("anoFilme").value);
+            let nota = parseFloat(document.getElementById("notaFilme").value);
+
+            if (!nome || isNaN(ano) || isNaN(nota) || nota < 0 || nota > 10) {
+                alert("Preencha todos os campos corretamente.");
+                return;
+            }
+
+            filmes.push({ nome, genero, ano, nota });
+            alert("Filme cadastrado com sucesso!");
+
+            document.getElementById("nomeFilme").value = "";
+            document.getElementById("anoFilme").value = "";
+            document.getElementById("notaFilme").value = "";
+        }
+
+        function listarFilmes() {
+            if (filmes.length === 0) {
+                exibir("Nenhum filme cadastrado.");
+                return;
+            }
+
+            let resultado = "Lista de Filmes:\n";
+            filmes.forEach((f, i) => {
+                resultado += `${i + 1}. ${f.nome} (${f.ano}) - Gênero: ${f.genero}, Nota: ${f.nota}\n`;
+            });
+            exibir(resultado);
+        }
+
+        function buscarFilmes() {
+            let termo = document.getElementById("buscaNome").value.trim().toLowerCase();
+            let encontrados = filmes.filter(f => f.nome.toLowerCase().includes(termo));
+
+            if (encontrados.length > 0) {
+                let resultado = "Filmes encontrados:\n";
+                encontrados.forEach(f => {
+                    resultado += `${f.nome} (${f.ano}) - Gênero: ${f.genero}, Nota: ${f.nota}\n`;
+                });
+                exibir(resultado);
+            } else {
+                exibir("Nenhum filme encontrado.");
+            }
+        }
+
+        function removerFilme() {
+            let nome = document.getElementById("removeNome").value.trim().toLowerCase();
+            let index = filmes.findIndex(f => f.nome.toLowerCase() === nome);
+
+            if (index !== -1) {
+                filmes.splice(index, 1);
+                exibir("Filme removido com sucesso.");
+            } else {
+                exibir("Filme não encontrado.");
+            }
+        }
+
+        function exibirEstatisticas() {
+            if (filmes.length === 0) {
+                exibir("Nenhum filme para estatísticas.");
+                return;
+            }
+
+            let total = filmes.length;
+            let somaNotas = filmes.reduce((acc, f) => acc + f.nota, 0);
+            let media = somaNotas / total;
+
+            let generoContagem = {};
+            filmes.forEach(f => {
+                generoContagem[f.genero] = (generoContagem[f.genero] || 0) + 1;
+            });
+
+            let generoMaisCadastrado = Object.keys(generoContagem).reduce((a, b) =>
+                generoContagem[a] > generoContagem[b] ? a : b
+            );
+
+            let destaques = filmes.filter(f => f.nota > 8);
+            let resultado = `Estatísticas:\n- Quantidade de filmes: ${total}\n- Média das notas: ${media.toFixed(2)}\n- Gênero mais cadastrado: ${generoMaisCadastrado}\n- Filmes com nota acima de 8:\n`;
+
+            if (destaques.length > 0) {
+                destaques.forEach(f => {
+                    resultado += `  • ${f.nome} (${f.ano}) - Nota: ${f.nota}\n`;
+                });
+            } else {
+                resultado += "  Nenhum filme com nota > 8.\n";
+            }
+
+            exibir(resultado);
+        }
+
+        function exibir(texto) {
+            document.getElementById("saida").value = texto;
+        }
+    </script>
+</body>
+</html>
